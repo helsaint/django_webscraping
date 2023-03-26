@@ -33,7 +33,7 @@ def web_scrape_api(request):
             player_valuation.append(p.text)
 
         dict_result = dict(zip(player_name,zip(player_img,player_valuation)))
-        return JsonResponse(json.dumps(dict_result), safe=False)
+        return JsonResponse(dict_result, safe=False)
     except:
         return render(request, "web_scrape_api.html", {})
 
