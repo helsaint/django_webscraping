@@ -14,10 +14,39 @@ def web_scrape_api(request):
     headers = {
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36',
     }
+    links_a = []
+    ##We first get a list of all links with the transferdata as not everything is stored
+    ##on a single page. 
+    try:
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.content, "html.parser")
+        ##Get all the links based on their class names
+        links_a = soup.find_all('a', {'class': 'tm-pagination__link'})
+    except:
+        return JsonResponse({"Error": "error"}, safe=False)
+    base_url = "https://www.transfermarkt.com"
+    dict_result = {}
+    for a in links_a:
+        ##We then scrape the tables using the web_scrape function
+        try:
+            dict_result.update(web_scrape(base_url+a['href']))
+        except:
+            continue
+    ##print(base_url+links_a[0]['href'])
+    ##dict_result.update(web_scrape(base_url+links_a[0]['href']))
+    
+    return JsonResponse(dict_result, safe=False)
+    
+def web_scrape(url):
+    url = url
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36',
+    }
     try:
         response = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.content, "html.parser")
         table = soup.find('table', {'class':'items'})
+
         ## Get images and names of players from first page
         players_img_src = table.find_all('img', {'class': 'bilderrahmen-fixed lazy lazy'})
         player_img = []
@@ -41,11 +70,10 @@ def web_scrape_api(request):
                 if(int_count%2 == 1):
                     player_age.append(str_age)
                 int_count = int_count + 1
-
-        print(len(player_age), player_age)
         dict_result = dict(zip(player_name,zip(player_img,player_valuation,player_age)))
-        return JsonResponse(dict_result, safe=False)
+        return dict_result
     except:
-        return render(request, "web_scrape_api.html", {})
+        return {'Error':'error'}
+
 
 # Create your views here.
