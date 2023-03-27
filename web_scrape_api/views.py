@@ -58,8 +58,14 @@ def web_scrape(url):
         ## Get valuation of players from first page
         players_value = table.find_all('td', {'class': 'rechts hauptlink'})
         player_valuation = []
+        player_link = []
         for p in players_value:
             player_valuation.append(p.text)
+            player_link.append('https://www.transfermarkt.com' + p.find('a', href=True)['href'])
+
+        ##test_link = table.find_all('td', {'class':'rechts hauptlink'})
+        ##for t in test_link:
+        ##    print(t.find('a', href=True)['href'])
 
         temp_data = table.find_all('td', {'class': 'zentriert'})
         int_count = 0
@@ -70,7 +76,7 @@ def web_scrape(url):
                 if(int_count%2 == 1):
                     player_age.append(str_age)
                 int_count = int_count + 1
-        dict_result = dict(zip(player_name,zip(player_img,player_valuation,player_age)))
+        dict_result = dict(zip(player_name,zip(player_img,player_valuation,player_age, player_link)))
         return dict_result
     except:
         return {'Error':'error'}
